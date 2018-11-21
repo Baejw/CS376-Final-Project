@@ -21,7 +21,7 @@ data = pd.read_csv("./data/data_train.csv", parse_dates=True, header=None).value
 data = np.asarray(list(map(lambda x: date_parser(x), data)))
 data = data.astype(float)
 
-X = data[:, -1]
+X = data[:, :-1]
 Y = data[:, -1]
 
 X_train, X_test, Y_train, Y_test = model_selection.train_test_split(X, Y, test_size=0.2)
