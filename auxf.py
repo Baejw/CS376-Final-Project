@@ -35,7 +35,7 @@ def read_data():
 	std_dev = np.nanstd(normalized_data, axis=0)
 	nan_mask = np.argwhere(np.isnan(data))
 	# print(std_dev / np.linalg.norm(std_dev))
-	#idx = [0, 4, 5, 6, 7, 9, 13, 15, 17, 19, 20, 21, 22]
+	idx = [0, 4, 5, 6, 7, 9, 13, 15, 17, 19, 20, 21, 22]
 
 	## deal with missing values
 	data = Imputer().fit_transform(data)
@@ -45,9 +45,9 @@ def read_data():
 	return data
 
 
-def cluster_fill(data, idx): ## maybe ry k-means
+def cluster_fill(data, idx): ## maybe try k-means
 	len_data = data.shape[0]
-	len_train = 5000
+	len_train = 10000
 	train_idx = np.random.permutation(len_data)[:len_train] ## get len_train random indexes
 	train_data = data[train_idx, :-1]
 	print("Clustering...")
