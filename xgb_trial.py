@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import math
+import random
 from xgboost import XGBRegressor
 from sklearn import model_selection
 from auxf import get_train_test, cluster_fill
@@ -12,6 +13,8 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import make_scorer
 
 initial_date = datetime.datetime(1980, 1, 1)
+np.random.seed(39)
+random.seed(39)
 
 def date_parser(vector):
     vector[0] = (datetime.datetime.strptime(vector[0], "%m/%d/%Y") - initial_date).days
@@ -33,47 +36,44 @@ def main():
 	nan_mask = np.argwhere(np.isnan(data))
 
 	data = Imputer().fit_transform(data)
-	#data = cluster_fill(data, nan_mask)
+	data = cluster_fill(data, nan_mask)
 
 	X_train, X_test, Y_train, Y_test = get_train_test(data)
-	#'''
 
-	params = {"max_depth": np.arange(7, 15, 2), 'learning_rate': np.arange(0.01, 0.02, 0.1), 'min_child_weight': np.arange(1, 3, 10), 'reg_lambda': np.arange(0.005, 0.02, 0.005)}
-	scorer = make_scorer(performance_metric, greater_is_better=True)
-	print("Started GridSearch")
-	grid_search = GridSearchCV(estimator = XGBRegressor(reg_lambda=0.005, max_depth=10, learning_rate=0.1, min_child_weight=1, random_state=39),
-							   param_grid=params,
-							   scoring=scorer,
-							   cv=33,
-							   n_jobs=-1,
-							   verbose=5)
-	grid_search.fit(data[:, :-1], data[:, -1])
-	print("Finished GridSearch")
-	print(grid_search.cv_results_, grid_search.best_params_, grid_search.best_score_)
+	results = []
 
-	'''
-
-	model = XGBRegressor(learning_rate=0.07, max_depth=15, reg_lambda=0.01)
+	model = XGBRegressor(learning_rate=0.097, max_depth=13, reg_lambda=0.005, min_child_weight=0, random_state=39)
 	model.fit(X_train, Y_train)
 
 	predictions = model.predict(X_test)
-	print(performance_metric(Y_test, np.expand_dims(predictions, 1)))
-	plt.scatter(predictions, Y_test)
-	plt.xlabel('Predicted')
-	plt.ylabel('True')
-	plt.show()
+	performance = performance_metric(Y_test, np.expand_dims(predictions, 1))
+	print(performance)
 	'''
-	#plt.savefig('xgb_regressor.png')
+	print("Started Random Search")
+	for i in range(100):
+		learning_rate = 0.1 * random.random() + 0.05
+		max_depth = math.ceil(10 * random.random() + 8)
+		reg_lambda = 0.015 * random.random() + 0.005
+		min_child_weight = math.floor(2 * random.random() + 0)
+
+		model = XGBRegressor(learning_rate=learning_rate, max_depth=max_depth, reg_lambda=reg_lambda, min_child_weight=min_child_weight, random_state=39)
+		model.fit(X_train, Y_train)
+
+		predictions = model.predict(X_test)
+		performance = performance_metric(Y_test, np.expand_dims(predictions, 1))
+		print("{}/{} - LR: {}, MD: {}, RL: {}, MCW: {}, P: {}".format(i + 1, 50, learning_rate, max_depth, reg_lambda, min_child_weight, performance))
+		results.append((learning_rate, max_depth, reg_lambda, min_child_weight, performance))
+
+	results = sorted(results, key=lambda x: x[4], reverse=True)
+	print(results[:10])
+	'''
 
 
+	#plt.scatter(predictions, Y_test)
+	#plt.xlabel('Predicted')
+	#plt.ylabel('True')
+	#plt.show()
 
-	"""
-	plt.bar(range(len(model.feature_importances_)), model.feature_importances_)
-	plt.show()
-	plt.savefig('feature_importance.png')
-
-	"""
-	#'''
 
 if __name__ == "__main__":
 	main()
