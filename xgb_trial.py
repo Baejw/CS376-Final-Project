@@ -17,9 +17,9 @@ np.random.seed(39)
 random.seed(39)
 
 def date_parser(vector):
-    vector[0] = (datetime.datetime.strptime(vector[0], "%m/%d/%Y") - initial_date).days
+    vector[0] = (datetime.datetime.strptime(vector[0], "%Y-%m-%d") - initial_date).days
     if isinstance(vector[18], str):
-        vector[18] = (datetime.datetime.strptime(vector[18], "%m/%d/%Y") - initial_date).days
+        vector[18] = (datetime.datetime.strptime(vector[18], "%Y-%m-%d") - initial_date).days
     return vector
 
 def performance_metric(actual, predicted):
@@ -31,18 +31,21 @@ def main():
 	data = data.astype(float)
 	data = np.delete(data, 17, 1)
 
-	idx = [0, 1, 2, 8, 10, 11, 12, 16, 17, 22]
+	#idx = [0, 1, 2, 8, 10, 11, 12, 16, 17, 22]
+	#idx = [0, 4, 5, 6, 7, 9, 13, 15, 17, 19, 20, 21, 22] ## prev idx
+
 	data = data[:, idx]
 	nan_mask = np.argwhere(np.isnan(data))
 
-	data = Imputer().fit_transform(data)
-	data = cluster_fill(data, nan_mask)
+	#data = Imputer().fit_transform(data)
+	#data = cluster_fill(data, nan_mask)
 
 	X_train, X_test, Y_train, Y_test = get_train_test(data)
 
 	results = []
 
 	model = XGBRegressor(learning_rate=0.097, max_depth=13, reg_lambda=0.005, min_child_weight=0, random_state=39)
+	print("XGBoost training...")
 	model.fit(X_train, Y_train)
 
 	predictions = model.predict(X_test)
