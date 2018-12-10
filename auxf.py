@@ -63,5 +63,5 @@ def cluster_fill(data, idx): ## maybe try k-means
 def get_train_test(data, test_size=0.05):
 	ordered_data = np.asarray(sorted(data.tolist(), key=lambda x: x[0]))
 	test_len = math.ceil(data.shape[0] * test_size)
-	return ordered_data[:-test_len, :-1], ordered_data[-test_len:, :-1], np.expand_dims(ordered_data[:-1*test_len, -1], 1), np.expand_dims(ordered_data[-1*test_len:, -1], 1)
+	return ordered_data[:-test_len, :-1], ordered_data[-test_len:, :-1], np.expand_dims(ordered_data[:-test_len, -1], 1), np.expand_dims(ordered_data[-test_len:, -1], 1)
 
