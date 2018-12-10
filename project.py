@@ -111,19 +111,21 @@ def training(X, y, random_split=True, unique=True, max_depth=13, learning_rate=0
 
 def testing(X, y, X_, unique=True, max_depth=13, learning_rate=0.097, min_child_weight=0, reg_lambda=0.005, random_state=39):
 	if unique:
+		filename = "./unique.csv"
 		model = XGBRegressor(max_depth=max_depth, learning_rate=learning_rate, min_child_weight=min_child_weight, reg_lambda=reg_lambda, random_state=39)
 	else:
+		filename = "./base.csv"
 		model = XGBRegressor(random_state=39)
 	print("XGBoost training...")
 	model.fit(X, y)
 	predictions = model.predict(X_)
-	np.savetxt("test.csv", predictions, delimiter=",")
+	pd.DataFrame(predictions).to_csv(filename, header=False, index=False)
 
 
 def main():
 	start = time.time()
 	data = read_data()
-	X, y = divide_data(data)
+	X, y = divide_data(data)	
 	X = remove_NImp_features(X)
 	X = gaussianImputer(X)
 	training(X, y, random_split=False)
