@@ -1,3 +1,11 @@
+'''
+CS376 - Term Project
+Team 21
+Clement Marcou
+Gabriel Lima
+Jaewoong Bae
+Myeonghoe Song
+'''
 import datetime
 import pandas as pd
 import numpy as np
@@ -40,7 +48,7 @@ def read_data(training=True):
 		file = "./data/data_train.csv"
 	else:
 		file = "./data/data_test.csv"
-	data = pd.read_csv("./data/data_train.csv", parse_dates=True, header=None).values
+	data = pd.read_csv(file, parse_dates=True, header=None).values
 	data = np.asarray(list(map(lambda x: date_parser(x), data)))
 	data = data.astype(float)
 	return data
@@ -82,6 +90,15 @@ def random_search(X, y, random_split=True, epochs=100):
 
 
 def training(X, y, random_split=True, unique=True, max_depth=13, learning_rate=0.097, min_child_weight=0, reg_lambda=0.005):
+	if unique:
+		print("With unique methods")
+		X = remove_NImp_features(X)
+		X = gaussianImputer(X)
+		model = XGBRegressor(max_depth=max_depth, learning_rate=learning_rate, min_child_weight=min_child_weight, reg_lambda=reg_lambda, random_state=39)
+	else:
+		print("Without unique methods")
+		model = XGBRegressor(random_state=39)
+
 	if random_split:
 		print("Random Split")
 		X_train, X_test, Y_train, Y_test = model_selection.train_test_split(X, y, test_size=0.05, random_state=39)
@@ -89,13 +106,6 @@ def training(X, y, random_split=True, unique=True, max_depth=13, learning_rate=0
 		print("Future Split")
 		data = np.concatenate((X, np.expand_dims(y, axis=1)), axis=1)
 		X_train, X_test, Y_train, Y_test = get_train_test(data)
-
-	if unique:
-		print("With unique methods")
-		model = XGBRegressor(max_depth=max_depth, learning_rate=learning_rate, min_child_weight=min_child_weight, reg_lambda=reg_lambda, random_state=39)
-	else:
-		print("Without unique methods")
-		model = XGBRegressor(random_state=39)
 
 	print("XGBoost training...")
 	model.fit(X_train, Y_train)
@@ -109,15 +119,21 @@ def training(X, y, random_split=True, unique=True, max_depth=13, learning_rate=0
 	print("Validation: {:.4}   Training: {:.4}".format(performance, performance_training))
 
 
-def testing(X, y, X_, unique=True, max_depth=13, learning_rate=0.097, min_child_weight=0, reg_lambda=0.005, random_state=39):
+def testing(X, y, X_, unique=True, max_depth=13, learning_rate=0.097, min_child_weight=0, reg_lambda=0.005):
 	if unique:
+		X = remove_NImp_features(X)
+		X = gaussianImputer(X)
+		X_ = remove_NImp_features(X_)
+		X_ = gaussianImputer(X_)
 		filename = "./unique.csv"
 		model = XGBRegressor(max_depth=max_depth, learning_rate=learning_rate, min_child_weight=min_child_weight, reg_lambda=reg_lambda, random_state=39)
 	else:
 		filename = "./base.csv"
 		model = XGBRegressor(random_state=39)
+
 	print("XGBoost training...")
 	model.fit(X, y)
+	print("Predicting and saving to {}".format(filename))
 	predictions = model.predict(X_)
 	pd.DataFrame(predictions).to_csv(filename, header=False, index=False)
 
@@ -126,9 +142,9 @@ def main():
 	start = time.time()
 	data = read_data()
 	X, y = divide_data(data)	
-	X = remove_NImp_features(X)
-	X = gaussianImputer(X)
-	training(X, y, random_split=False)
+	# training(X, y)
+	X_ = read_data(training=False)
+	testing(X, y, X_, False)
 	end = time.time()
 	print("Time Elapsed: {:.3}".format(end - start))
 
