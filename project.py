@@ -11,7 +11,6 @@ import pandas as pd
 import numpy as np
 import math
 import time
-from auxf import get_train_test
 from xgboost import XGBRegressor
 from sklearn import model_selection
 np.random.seed(39)
