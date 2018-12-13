@@ -11,6 +11,7 @@ import pandas as pd
 import numpy as np
 import math
 import time
+import os
 from xgboost import XGBRegressor
 from sklearn import model_selection
 np.random.seed(39)
@@ -119,6 +120,7 @@ def training(X, y, random_split=True, unique=True, max_depth=13, learning_rate=0
 
 
 def testing(X, y, X_, unique=True, max_depth=13, learning_rate=0.097, min_child_weight=0, reg_lambda=0.005):
+	saved = False
 	if unique:
 		X = remove_NImp_features(X)
 		X = gaussianImputer(X)
@@ -126,12 +128,22 @@ def testing(X, y, X_, unique=True, max_depth=13, learning_rate=0.097, min_child_
 		X_ = gaussianImputer(X_)
 		filename = "./unique.csv"
 		model = XGBRegressor(max_depth=max_depth, learning_rate=learning_rate, min_child_weight=min_child_weight, reg_lambda=reg_lambda, random_state=39)
+		if os.path.isfile("unique.model"):
+			saved = True
+			print("Loading unique.model")
+			model.load_model("unique.model")
 	else:
 		filename = "./base.csv"
 		model = XGBRegressor(random_state=39)
+		if os.path.isfile("base.model"):
+			saved = True
+			print("Loading base.model")
+			model.load_model("base.model")
 
-	print("XGBoost training...")
-	model.fit(X, y)
+	if not saved:
+		print("XGBoost training...")
+		model.fit(X, y)
+		model.save_model("{}.model".format(filename[:-4]))
 	print("Predicting and saving to {}".format(filename))
 	predictions = model.predict(X_)
 	pd.DataFrame(predictions).to_csv(filename, header=False, index=False)
