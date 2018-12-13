@@ -64,30 +64,30 @@ def divide_data(data):
 	return X, y
 
 
-def random_search(X, y, random_split=True, epochs=50):
+def random_search(X, y, random_split=True, epochs=100):
 	if random_split:
 		X_train, X_test, Y_train, Y_test = model_selection.train_test_split(X, y, test_size=0.05, random_state=39)
 	else:
 		X_train, X_test, Y_train, Y_test = get_train_test(np.concatenate(X, np.expand_dims(y, axis=1)), axis=1)
-	
-	results = np.zeros((0,5))
-	print("Started Random Search") 
+	results=np.zeros((0,5))
+	print("Started Random Search")
 	for i in range(epochs):
-		learning_rate = 0.1 * np.random.random() + 0.05
-		max_depth = math.ceil(10 * np.random.random() + 8)
-		reg_lambda = 0.015 * np.random.random() + 0.005
-		min_child_weight = math.floor(2 * np.random.random() + 0)
+		learning_rate = 0.1 * random.random() + 0.05
+		max_depth = math.ceil(10 * random.random() + 8)
+		reg_lambda = 0.015 * random.random() + 0.005
+		min_child_weight = math.floor(2 * random.random() + 0)
 
 		model = XGBRegressor(learning_rate=learning_rate, max_depth=max_depth, reg_lambda=reg_lambda, min_child_weight=min_child_weight, random_state=39)
 		model.fit(X_train, Y_train)
-        
+
 		predictions = model.predict(X_test)
 		performance = performance_metric(Y_test, predictions)
-		print("{}/{} - LR: {}, MD: {}, RL: {}, MCW: {}, P: {}".format(i + 1, epochs, learning_rate, max_depth, reg_lambda, min_child_weight, performance))
-		re=np.array([learning_rate,max_depth,reg_lambda,min_child_weight,performance]).reshape((1,-1))
-		results=np.vstack([results,re])
-	results = np.asarray(sorted(results, key=lambda x: x[3], reverse=True))
-	print(results[epochs-1,:])
+		print("{}/{} - LR: {}, MD: {}, RL: {}, MCW: {}, P: {}".format(i + 1, 50, learning_rate, max_depth, reg_lambda, min_child_weight, performance))
+		res=np.array([learning_rate,max_depth,reg_lambda,min_child_weight,performance]).reshape((1,-1))
+		results=np.vstack([results,res])
+
+	results = np.asarray(sorted(results, key=lambda x: x[4], reverse=True))
+	print(results[:10])
 
 
 def training(X, y, random_split=True, unique=True, max_depth=13, learning_rate=0.097, min_child_weight=0, reg_lambda=0.005):
