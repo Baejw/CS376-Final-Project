@@ -86,7 +86,7 @@ def random_search(X, y, random_split=True, epochs=50):
 		print("{}/{} - LR: {}, MD: {}, RL: {}, MCW: {}, P: {}".format(i + 1, epochs, learning_rate, max_depth, reg_lambda, min_child_weight, performance))
 		re=np.array([learning_rate,max_depth,reg_lambda,min_child_weight,performance]).reshape((1,-1))
 		results=np.vstack([results,re])
-	results = np.asarray(sorted(results, key=lambda x: x[3], reverse=True))
+	results = np.asarray(sorted(results, key=lambda x: x[4], reverse=True))
 	print(results[epochs-1,:])
 
 
